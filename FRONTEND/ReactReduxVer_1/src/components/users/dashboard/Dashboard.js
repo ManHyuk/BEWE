@@ -1,3 +1,5 @@
+import '/../style/users.css';
+
 import React, { Component } from 'react';
 import { default as Fade } from 'react-fade'
 
@@ -24,7 +26,7 @@ class Dashboard extends Component {
     this.setState({ width: window.innerWidth, height: window.innerHeight });
   }
   render() {
-    let height = this.state.height - 296;
+    let height = this.state.height - 60;
 
     return(
       <div className="container" 
@@ -32,7 +34,7 @@ class Dashboard extends Component {
                    "minHeight": height, "height": "100%"}}>
         <DashboardLeft />       
         
-        <div className="dashboard-right-wrapper">
+        <div id="dashboard-right-wrapper">
           <DashboardRight height={height}/>
         </div> 
       </div>

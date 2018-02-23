@@ -1,5 +1,3 @@
-import '../../users.css'
-
 import React, { Component } from 'react';
 import Moment from 'react-moment';
 

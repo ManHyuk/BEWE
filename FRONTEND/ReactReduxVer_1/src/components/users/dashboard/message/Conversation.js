@@ -1,21 +1,10 @@
-import '../../users.css'
-
 import React, { Component } from 'react';
 import Moment from 'react-moment';
 import axios from 'axios';
 
+import { fetchOtherProfile } from 'helper';
+
 let otherUserIdx = '';
-const API_URL = 'http://127.0.0.1:3000/api/users';
-
-const fetchOtherProfile = async (idx) => {
-  let result = '';
-
-  await axios.get(`${API_URL}/${idx}`, 
-    {headers: {'token' : JSON.parse(localStorage.getItem('token'))}})
-    .then((response) => {result = response});
-    
-  return result;
-}
 
 class Conversation extends Component {
   constructor(props){
@@ -52,7 +41,10 @@ class Conversation extends Component {
             this.props.conversation.idx, this.state.profile.nickname)}>
           <div className="conversation-list-left">
             <div className="noti-avatar-wrapper">
-              <img className="avatar-image" src={(this.state.profile.avatar) !== null ? this.state.profile.avatar : "http://genknews.genkcdn.vn/zoom/220_160/2017/thumbnail-4x3-34722014736-2d241425f9-k-1495531031736-crop-1495531041612.jpg"}/>
+              <img className="avatar-image" 
+                src={(this.state.profile.avatar) !== null ? 
+                  this.state.profile.avatar : 
+                  "/../public/img/avatar.png"} />
             </div>
           </div>
 

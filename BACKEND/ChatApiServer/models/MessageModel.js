@@ -24,6 +24,62 @@ exports.listConversation = (userData) => {
   });
 };
 
+exports.check = (userIdx, receiverIdx) => {
+  return new Promise((resolve, reject) => {
+    const sql = 
+      `
+      SELECT idx FROM conversations 
+       WHERE users_idx_1 = ? AND users_idx_2 = ?
+          OR users_idx_1 = ? AND users_idx_2 = ?
+      `;
+
+    pool.query(sql, [userIdx, receiverIdx, receiverIdx, userIdx], (err, rows) => {
+      if (err) {
+        console.log(err);
+        reject(err);
+      } else {
+        if (rows.length > 0) {
+          resolve({result: true});
+        } else {
+          resolve({result: false});
+        }        
+      }
+    });
+  });
+}
+
+exports.new = (userIdx) => {
+  return new Promise((resolve, reject) => {
+    const sql = `SELECT idx FROM messages 
+                  WHERE receiver_idx = ? AND flag = 0`;
+    
+    pool.query(sql, [userIdx], (err, rows) => {
+      if (err) {
+        console.log(err);
+        reject(err);
+      } else {
+        resolve(rows);
+      }
+    });
+  });  
+};
+
+exports.newFromConversation = (userIdx, conversationIdx) => {
+  return new Promise((resolve, reject) => {
+    const sql = `SELECT idx FROM messages 
+                  WHERE receiver_idx = ? AND flag = 0 AND conversation_idx = ?`;
+    
+    pool.query(sql, [userIdx, conversationIdx], (err, rows) => {
+      if (err) {
+        console.log(err);
+        reject(err);
+      } else {
+        resolve(rows);
+      }
+    });
+  });  
+};
+
 exports.getNewMessage = (messageIdx) => {
   return new Promise((resolve, reject) => {
     const sql = 'SELECT * FROM messages WHERE idx = ?';
@@ -57,6 +113,22 @@ exports.getConversation = (userData, conversationId) => {
           reject(2412);
         }
       }
+    });
+  })
+  .then((conversationId) => {
+    return new Promise((resolve, reject) => {
+      const sql = `UPDATE messages
+                      SET flag = 1 
+                    WHERE conversation_idx = ? AND receiver_idx = ?`;
+      
+      pool.query(sql, [conversationId, userData], (err, rows) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        } else {
+          resolve(conversationId);
+        }
+      });
     });
   })
   .then((conversationId) => {
@@ -112,10 +184,10 @@ exports.openConversation = (userData, receiverData) => {
           const sql = 
             'INSERT INTO conversations (users_idx_1, users_idx_2, last_message) VALUES (?, ?, ?)';
           context.conn.query(sql, [userData, receiverData, last_message], (err, rows) => {
-            if(err){
+            if (err) {
               console.log(err);
               reject(err);
-            }else{
+            } else {
               if (rows.affectedRows === 1) { // 대화방 생성
                 context.flag = 1;
                 context.msg = last_message;

@@ -1,13 +1,12 @@
 import React, { Component } from 'react';
 
 import { connect } from 'react-redux';
-import { Table } from 'reactstrap';
 import { NavLink } from 'react-router-dom';
 
-import { fetchNoties } from '../../../../actions/users/NotiActions';
+import { fetchNoties } from 'actions/users/NotiActions';
 import Noti from './Noti';
 
-const fadeDuration = 10;
+const fadeDuration = 0.3;
 
 class NotiList extends Component {
   constructor(props){
@@ -48,9 +47,26 @@ class NotiList extends Component {
     });
   }
 
-  render() {
-    if(this.props.noties === undefined) {
-      return <div>Loading...</div>
+  render() {    
+    if (this.props.noties === undefined) {
+      return (
+        <div className="dashboard-loader">
+          <HashLoader
+            color={'#00B0FF'} 
+            loading={true} 
+          />
+          <p>알림을 로딩하고 있습니다.</p>
+        </div>
+      )
+    }
+
+    if (this.props.noties.length === 0) {
+      return (
+        <div className="dashboard-loader">
+          <img src="/../public/img/empty.png" />
+          <p>도착한 알림이 없습니다!</p>
+        </div>
+      )
     }
 
     else {
@@ -71,6 +87,7 @@ class NotiList extends Component {
     }    
   }
 }
+
 function mapStateToProps(state){
   return { noties: state.noties.all }
 }

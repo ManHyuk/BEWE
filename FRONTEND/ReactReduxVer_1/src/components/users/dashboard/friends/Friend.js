@@ -1,32 +1,16 @@
-import '../../users.css'
-
 import React, { Component } from 'react';
 import Moment from 'react-moment';
 import Parser from 'html-react-parser';
 import axios from 'axios';
-import { Card, CardTitle, CardSubtitle, CardText, Button } from 'reactstrap';
 
-import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-const icon = (type) => {
-  if (type === 'friend') {
-    return (<span className="ion-person-add noti-list-icon" />)
-  }
-}
+import { fetchOtherId, fetchOtherProfile } from 'helper';
+import FriendAllCard from './FriendAllCard';
+import FriendRequest from './FriendRequest';
+import FriendFindCard from './FriendFindCard';
 
 let otherUserIdx = '';
-const API_URL = 'http://127.0.0.1:3000/api/users';
-
-const fetchOtherProfile = async (idx) => {
-  let result = '';
-
-  await axios.get(`${API_URL}/${idx}`, 
-    {headers: {'token' : JSON.parse(localStorage.getItem('token'))}})
-    .then((response) => {result = response});
-    
-  return result;
-}
 
 class Friend extends Component {
   constructor(props){
@@ -55,7 +39,13 @@ class Friend extends Component {
   // }
 
   async componentWillMount() {
-    const profile = await fetchOtherProfile(otherUserIdx);
+    let profile = '';
+
+    if (this.props.type === 'all') {
+      profile = await fetchOtherProfile(otherUserIdx);
+    } else {
+      profile = await fetchOtherId(otherUserIdx);
+    }
 
     this.setState({
       profile: profile.data.result
@@ -63,24 +53,24 @@ class Friend extends Component {
   }
 
   render(){
-    if(this.state.profile === undefined) {
-      return <div>Loading...</div>
-    } else {
-      return(      
-        <Card className="friend-card-wrapper">
-          <div className="friend-left-wrapper">
-            <CardTitle>{this.state.profile.nickname}</CardTitle>
-            <CardSubtitle style={{"margin":"7px 0"}}>{this.state.profile.id}</CardSubtitle>          
-            <CardText style={{"color":"#999999", "fontSize":"13px"}}>{this.state.profile.email}</CardText>
-          </div>
-          <div className="friend-right-wrapper">
-            <div className="friend-avatar-wrapper">
-              <img className="avatar-image" src={(this.state.profile.avatar) !== null ? this.state.profile.avatar : "http://genknews.genkcdn.vn/zoom/220_160/2017/thumbnail-4x3-34722014736-2d241425f9-k-1495531031736-crop-1495531041612.jpg"}/>
-            </div>
-          </div>
-          <Button style={{"display" : "block"}}>프로필 보기</Button>  
-        </Card>
+    if (this.state.profile === undefined || this.props.friend === undefined) {
+      return (
+        <HashLoader
+          color={'#00B0FF'} 
+          loading={true} 
+        />
       )
+    } else {
+      if (this.props.type === 'all') {
+        return (
+          <FriendAllCard profile={this.state.profile} type={this.props.type} />
+        )
+      } else {
+        return (
+          <FriendRequest profile={this.state.profile} 
+            type={this.props.type} idx={this.props.friend.idx}/>
+        )
+      }
     }
   }
 }

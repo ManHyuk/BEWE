@@ -16,5 +16,14 @@ module.exports = (router) => {
   router.route('/message/:idx')
     .get(authCtrl.auth, messageCtrl.list('last'));
 
+  router.route('/newmessages')
+    .get(authCtrl.auth, messageCtrl.new('all'));
+
+  router.route('/newmessages/:idx')
+    .get(authCtrl.auth, messageCtrl.new('conversation'));
+  
+  router.route('/check/:idx')
+    .get(authCtrl.auth, messageCtrl.check);
+    
   return router;
 };

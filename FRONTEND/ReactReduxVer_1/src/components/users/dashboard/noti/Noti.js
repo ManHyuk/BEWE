@@ -1,11 +1,9 @@
-import '../../users.css'
-
 import React, { Component, PropTypes } from 'react';
 import Moment from 'react-moment';
 import Parser from 'html-react-parser';
 import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { checkNoti } from '../../../../actions/users/NotiActions';
+import { checkNoti } from 'actions/users/NotiActions';
 
 const icon = (type) => {
   if (type === 'friend') {
@@ -25,8 +23,7 @@ class Noti extends Component {
   };
 
   onCheckNoti() {
-    console.log(this.props.noti.idx);
-    if(this.props.checkNoti(this.props.noti.idx)) {
+    if (this.props.checkNoti(this.props.noti.idx)) {
       this.context.router.history.push(this.props.noti.url);
     }
   }
@@ -36,7 +33,7 @@ class Noti extends Component {
       <div onClick={this.onCheckNoti} 
         className={`noti-wrapper ${(this.props.noti.flag === 0) ? 'noti-checked' : ''}`}>
         <div className="noti-avatar-wrapper">
-          <img className="avatar-image" src={(this.props.noti.image) !== null ? this.props.noti.image : "http://genknews.genkcdn.vn/zoom/220_160/2017/thumbnail-4x3-34722014736-2d241425f9-k-1495531031736-crop-1495531041612.jpg"}/>
+          <img className="avatar-image" src={(this.props.noti.image) !== null ? this.props.noti.image : "/../public/img/logo.png"}/>
         </div>
         <div className="noti-contents">
           <p>{Parser(this.props.noti.contents)}</p>

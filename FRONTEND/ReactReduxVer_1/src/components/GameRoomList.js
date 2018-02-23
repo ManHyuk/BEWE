@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import { HashLoader } from 'react-spinners';
+import { default as Fade } from 'react-fade'
 
 import ReactModal from 'react-modal';
 import { Table, Button,
@@ -10,6 +12,9 @@ import ChatApp from './chatt/ChatApp';
 import axios from 'axios';
 
 import PropTypes from 'prop-types';
+
+const fadeDuration = 0.3;
+
 
 class GameRoomList extends Component {
     static contextTypes={
@@ -37,10 +42,12 @@ class GameRoomList extends Component {
 
         this.handleRoomNameChange = this.handleRoomNameChange.bind(this);
         this.handleRoomSizeChange = this.handleRoomSizeChange.bind(this);
+
+        this.roomListInterval = this.roomListInterval.bind(this);
       }
 
       handleCreateRoomModal(e){
-          if(this.state.createRoomName == ''){
+          if(this.state.createRoomName == '' || this.state.createRoomSize == 0){
             return 
           }
         axios.post(`http://localhost:4001/api/createroom`,{
@@ -51,8 +58,15 @@ class GameRoomList extends Component {
         })
         .then((responseDate)=>{
             console.log(responseDate);
-            this.setState({rows : responseDate.data});
-        }).catch((err)=>{
+            this.setState({
+                rows : responseDate.data
+                ,roomSeq: responseDate.data.length
+                ,roomSize: responseDate.data[responseDate.data.length-1].cnt
+                ,roomName: responseDate.data[responseDate.data.length-1].name
+                ,roomAdmin: responseDate.data[responseDate.data.length-1].adminUser
+            });
+        })
+        .catch((err)=>{
             console.log(err);
         }).then(
             this.handleCloseModal            
@@ -67,11 +81,15 @@ class GameRoomList extends Component {
       handleRoomNameChange(e){
         this.setState({
             createRoomName : e.target.value
-        })
+        });
       }
       
       handleOpenModal () {
-        this.setState({ showModal: true });
+        this.state.roomSeq 
+        ?
+        ''
+        :
+        this.setState({ showModal: true })
       }
       
       handleCloseModal () {
@@ -89,8 +107,10 @@ class GameRoomList extends Component {
         })
     }
     componentDidMount(){
+        setInterval(this.roomListInterval, 2000);
+    }
 
-        // console.log(this.state.paramsRoomNumber);
+    roomListInterval(){
         fetch(`http://localhost:4001/api/roomlist/${this.state.paramsGameNumber}`,{
             method: 'get',
             headers: {
@@ -100,7 +120,6 @@ class GameRoomList extends Component {
               }
         }).then((response)=> response.json())
         .then((responseDate)=>{
-            // console.log(responseDate);
             this.setState({rows : responseDate});
         }).catch((err)=>{
             console.log(err);
@@ -121,8 +140,6 @@ class GameRoomList extends Component {
 
     
     render() {
-        // console.log(this.state.paramsRoomNumber);
-        
         const mapToComponents = (data)=>{
             data = data.filter(
                 (contact)=>{
@@ -142,26 +159,25 @@ class GameRoomList extends Component {
         }
 
         return (
-            <div>
-                <hr/>
-            <div style={{"display" : "inline-block", "width":"70%"}}>
+            <div style={{"width":"80%", "margin": "0 auto"}}>
+                <Fade
+          duration={fadeDuration}
+        >
+                <br />
                 <h1>TITLE</h1>
-                <div className="wi3">
                 <InputGroup>
-                <Input placeholder="방 이름을 적어주세요" 
+                <Input placeholder="검색할 방 이름을 적어주세요" 
                     value={this.state.keyword}
                     name="keyword"
                     onChange={this.handleChange}
                 />
-                </InputGroup>
+                &nbsp;
                 <Button color="info" 
                     onClick={this.handleOpenModal}
                 >방 만들기</Button>
-                <Button color="info"  onClick={()=> 
-                    this.context.router.history.push(`/gamegamelist/${this.state.paramsGameNumber}`) 
-                }
-                >리스트 다시 불러오기</Button>
-                //////////////////
+                
+                </InputGroup>
+                
         <div >
         <ReactModal 
            isOpen={this.state.showModal}
@@ -171,7 +187,6 @@ class GameRoomList extends Component {
                 backgroundColor: '#6c757d',
                 'marginTop':'76px',
                 opacity: 0.97
-
               }
             }}
             onRequestClose={this.handleCloseModal}
@@ -191,9 +206,7 @@ class GameRoomList extends Component {
         </ReactModal>
         </div>
                 &nbsp;
-                <Button color="secondary" >Rank 시작</Button>
                 <p/>
-                </div>
                 <Table hover>
                 <thead>
                 <tr>
@@ -204,25 +217,37 @@ class GameRoomList extends Component {
                 </tr>
                 </thead>
                 <tbody>
-                    {mapToComponents(this.state.rows)}
+                    {this.state.rows.length === 0  
+                        ? <tr><td colSpan="4">
+                        <center>
+                            <br/>
+                            <HashLoader
+            color={'#7F7F7F'} 
+            loading={true} 
+          />
+          <br />
+                            '만들어진 방이 없거나 가져오는 중입니다.'
+                        </center></td></tr>
+                        : mapToComponents(this.state.rows)}
                 </tbody>
             </Table>
-            </div>
-            <div style={{"display" : "inline-block", "width":"20%"}}>
+            {/* <div style={{"display" : "inline-block", "width":"20%"}}>
                 hi
-            </div>
+            </div> */}
             <div>
-                <h1>Room IDX = {this.state.roomSeq}</h1>
                 {
                     this.state.roomSeq ? 
                     <ChatApp paramsGameNumber={this.state.paramsGameNumber} 
                         roomSeq={this.state.roomSeq} 
                         roomName={this.state.roomName}
+                        roomSize={this.state.rows}
                         username={(JSON.parse(localStorage.getItem("profile")).nickname)}
                         exitHandler={this.exitHandler}
                     /> : ''
                 }
             </div>
+            
+            </Fade>
             </div>
         );
     }
